@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Titillium+Web:wght@200;300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*{
+    margin: 0;
+    padding:0;
+    font-family: "Poppins", sans-serif;
+}
+header{
+    background:url(../../img/bg.png);
+    background-size: cover;
+    background-position:center;
+    height: 300px;
+}
+header h1{
+    text-align: center;
+    font-size: 35px;
+    /* background-color: #000; */
+    color: #fff;
+    padding: 30px 0;
+}
+
+/* Barra navegacion  */
+
+.navbar {
+    background-color: #FFFFFF;
+    height: 100px;
+    margin: 30px;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 0 10px 5px rgba(0,0,0,0.3);
+}
+
+.boton-login{
+   background-color: #881f9d;
+   color: #FFFFFF;
+   font-size: 14px;
+   padding: 8px 20px;
+   border-radius: 50px;
+   text-decoration: none;
+   transition: 0.3s background-color
+   ;
+}
+
+.boton-login:hover{
+   background-color: #500c66;
+}
+
+
+.nav-link{
+   color: gray;
+   font-weight: 500;
+   position: relative;
+}
+
+.nav-link:hover , .nav-link.active{
+   color: #000;
+}
+
+/* EFECTO BARRA NAVEGACION  SOLO CUANDO TENGA UN MIN : DE 991PX */
+
+@media (min-width: 991px) {
+
+   .nav-link::before{
+       content: "";
+       position: absolute;
+       bottom: 0;
+       left: 50%;
+       transform: translateX(-50%);
+       width: 0;
+       height: 2px;
+       background-color: #881f9d;
+       visibility: hidden;
+       transition: 0.3s ease-in-out;
+   }
+
+   .nav-link:hover::before , .nav-link.nav-link.active::before{
+       width: 100%;
+       visibility: visible;
+   }
+
+}
+
+.tituloprodcutos{
+    font-size: 30px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 100px;
+}
+
+.contenedorstock{
+    padding: 3px 8px;
+    background-color: #881f9d;
+    border-radius: 7px;
+}
+
+.stock{
+    color: white;
+}
+
+.container-items{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+
+
+.img-item{
+    width: 50%;
+    height: 180px;
+    align-items: center;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    transition: all .5s;
+}
+
+.item-figure{
+    justify-content: center;
+    overflow: hidden;
+    display: flex;
+}
+
+.item:hover img{
+    transform: scale(1.2);
+}
+
+.info-product{
+    padding: 30px 30px;
+    line-height: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.precio{
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.info-product button{
+    border: none;
+    background: none;
+    background-color: black;
+    color: #fff;
+    padding: 15px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.tituloproduc{
+    text-align: center;
+    margin-top: 100px;
+    font-weight: bold;
+}
+
+
+/* SECCION RESPONSIVE */
+@media screen and (max-width: 850px) {
+    .contenedor {
+      display: block;
+    }
+    .contenedor-items{
+        width: 100% !important;
+    }
+    .carrito{
+        width: 100%;
+    }
+  }
+
