@@ -4,17 +4,34 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 const CreateProveedores = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
-    const numeroigual = ()=>toast.error("Número debe tener 10 Digitos");
-    const solonumero = ()=>toast.error("Solo admite Numeros");
+    const numeroigual = () => toast.error("Número debe tener 10 Digitos");
+    const solonumero = () => toast.error("Solo admite Numeros");
+
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+      });
+    
+      const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+    
+        notificacionLogout();
+    
+        setTimeout(() => {
+          navigate("/"); 
+        }, 2000); 
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
+        const correoLogin = localStorage.getItem('correoLogin');
 
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-            navigate('/'); 
+            navigate('/');
         }
     }, [navigate]);
 
@@ -41,24 +58,24 @@ const CreateProveedores = () => {
             return;
         }
 
-        if(formData.telefono.length < 10 || formData.telefono.length >= 11){
+        if (formData.telefono.length < 10 || formData.telefono.length >= 11) {
             numeroigual();
             return;
-        }else if((/[^0-9]/g.test(formData.telefono))){
+        } else if ((/[^0-9]/g.test(formData.telefono))) {
             solonumero();
             return;
         }
 
-        
+
         axios.post(`${process.env.REACT_APP_API_URL}/api/v1/proveedores/proveedores`, formData)
 
-        
+
             .then(response => {
                 setSuccess('Proveedor creado con éxito!');
                 setError('');
                 setFormData({ name: '', email: '', telefono: '', servicios: '' });
                 setTimeout(() => {
-                    navigate('/admin/proveedores'); 
+                    navigate('/admin/proveedores');
                 }, 500);
             })
             .catch(error => {
@@ -82,7 +99,7 @@ const CreateProveedores = () => {
                     <span className="text">CENTURY</span>
                 </a>
                 <ul className="side-menu top">
-                    <li className="active">
+                    <li >
                         <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
@@ -100,7 +117,7 @@ const CreateProveedores = () => {
                             <span className="text">Productos</span>
                         </Link>
                     </li>
-                    <li>
+                    <li className="active">
                         <Link to="/admin/proveedores">
                             <i className='bx bxs-truck'></i>
                             <span className="text">Proveedores</span>
@@ -121,13 +138,7 @@ const CreateProveedores = () => {
                 </ul>
                 <ul className="side-menu">
                     <li>
-                        <a href="#">
-                            <i className='bx bxs-cog'></i>
-                            <span className="text">Configuración</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="logout" onClick={handleLogout}>
+                        <a href="#" className="logout" onClick={logout}>
                             <i className='bx bxs-log-out-circle'></i>
                             <span className="text">Cerrar Sesión</span>
                         </a>

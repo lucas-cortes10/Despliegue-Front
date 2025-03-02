@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import DataTable from 'react-data-table-component'; // Importar DataTable
+import DataTable from 'react-data-table-component'; 
+import toast, { Toaster } from 'react-hot-toast';
+
 
 const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const notificacionLogout = () => toast('Cerrando Sesion!', {
+    icon: '🚪',
+});
+
+const logout = () => {
+    // Eliminar Datos
+    localStorage.removeItem("nombreUsuario");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+
+    notificacionLogout();
+
+    setTimeout(() => {
+        navigate("/");
+    }, 2000);
+};
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -21,17 +40,17 @@ const Categorias = () => {
     axios.get(`${process.env.REACT_APP_API_URL}/api/v1/categorias/reporte`, {
       responseType: 'blob', //archivo bin
     })
-    .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'categorias.pdf');
-      document.body.appendChild(link);
-      link.click();
-    })
-    .catch((error) => {
-      console.error('Error al descargar el PDF:', error);
-    });
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'categorias.pdf');
+        document.body.appendChild(link);
+        link.click();
+      })
+      .catch((error) => {
+        console.error('Error al descargar el PDF:', error);
+      });
   };
 
   useEffect(() => {
@@ -86,13 +105,13 @@ const Categorias = () => {
   return (
     <div className="ds-container">
       {/* SIDEBAR */}
-      <section id="sidebar">
+      <section id="sidebar" >
         <a href="#" className="brand">
           <i className='bx bxs-face-mask'></i>
           <span className="text">CENTURY</span>
         </a>
         <ul className="side-menu top">
-          <li>
+          <li >
             <a href="#">
               <i className='bx bxs-dashboard'></i>
               <span className="text">Inicio</span>
@@ -131,13 +150,7 @@ const Categorias = () => {
         </ul>
         <ul className="side-menu">
           <li>
-            <a href="#">
-              <i className='bx bxs-cog'></i>
-              <span className="text">Configuracion</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" className="logout" onClick={handleLogout}>
+            <a href="#" className="logout" onClick={logout}>
               <i className='bx bxs-log-out-circle'></i>
               <span className="text">Cerrar Sesión</span>
             </a>
@@ -193,6 +206,7 @@ const Categorias = () => {
           </div>
         </main>
       </section>
+      <Toaster />
     </div>
   );
 };

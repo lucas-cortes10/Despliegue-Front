@@ -81,12 +81,6 @@ const Ds = () => {
         </ul>
         <ul className="side-menu">
           <li>
-            <a href="#">
-              <i className='bx bxs-cog'></i>
-              <span className="text">Configuracion</span>
-            </a>
-          </li>
-          <li>
             <a href="#" className="logout" onClick={logout}>
               <i className='bx bxs-log-out-circle'></i>
               <span className="text">Cerrar Sesión</span>

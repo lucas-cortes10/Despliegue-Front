@@ -1,18 +1,36 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import emailjs from 'emailjs-com';
 import { Link, useNavigate } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 
 const EnviarCorreos = () => {
     const navigate = useNavigate();
 
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+    });
+    
+    const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+    
+        notificacionLogout();
+    
+        setTimeout(() => {
+            navigate("/");
+        }, 2000);
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
-       //Verifica si es admin o no
+        const correoLogin = localStorage.getItem('correoLogin');
+        //Verifica si es admin o no
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-          navigate('/'); 
+            navigate('/');
         }
-      }, [navigate]);
+    }, [navigate]);
 
 
     const [formData, setFormData] = useState({
@@ -79,7 +97,7 @@ const EnviarCorreos = () => {
                 </a>
                 <ul className="side-menu top">
                     <li >
-                        <a href="/admin">
+                        <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
                         </a>
@@ -90,13 +108,13 @@ const EnviarCorreos = () => {
                             <span className="text">Categorias</span>
                         </Link>
                     </li>
-                    <li>
+                    <li >
                         <Link to="/admin/productos">
                             <i className='bx bxs-doughnut-chart'></i>
                             <span className="text">Productos</span>
                         </Link>
                     </li>
-                    <li>
+                    <li >
                         <Link to="/admin/proveedores">
                             <i className='bx bxs-truck'></i>
                             <span className="text">Proveedores</span>
@@ -117,13 +135,7 @@ const EnviarCorreos = () => {
                 </ul>
                 <ul className="side-menu">
                     <li>
-                        <a href="#">
-                            <i className='bx bxs-cog'></i>
-                            <span className="text">Configuración</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="logout">
+                        <a href="#" className="logout" onClick={logout}>
                             <i className='bx bxs-log-out-circle'></i>
                             <span className="text">Cerrar Sesión</span>
                         </a>
@@ -240,6 +252,7 @@ const EnviarCorreos = () => {
                     </div>
                 </main>
             </section>
+            <Toaster />
         </div>
     );
 };

@@ -3,6 +3,17 @@ import { useNavigate } from "react-router-dom";
 
 const Inicio = () => {
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const correoLogin = localStorage.getItem('correoLogin'); 
+        if (!token || !correoLogin) {
+          navigate(''); 
+        }else{
+          navigate('/usuario/inicio');
+        }
+      }, [navigate]);
+
+
     const navigate = useNavigate();
     
     return (

@@ -1,32 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 
 const EditCategoria = () => {
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
-    const { id } = useParams();  
+    const { id } = useParams();
 
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+    });
+    
+    const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+    
+        notificacionLogout();
+    
+        setTimeout(() => {
+            navigate("/");
+        }, 2000);
+    };
+    
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
-       //Verifica si es admin o no
+        const correoLogin = localStorage.getItem('correoLogin');
+        //Verifica si es admin o no
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-          navigate('/'); 
+            navigate('/');
         }
-      }, [navigate]);
- 
+    }, [navigate]);
+
     const handleChange = (e) => {
-        setName(e.target.value);  
+        setName(e.target.value);
     };
 
-   
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-       
+
         if (!name) {
             setError('El nombre de la categoría es requerido.');
             return;
@@ -41,7 +59,7 @@ const EditCategoria = () => {
                 setSuccess('Categoría actualizada con éxito!');
                 setError('');
                 setTimeout(() => {
-                    navigate("/admin/categorias"); 
+                    navigate("/admin/categorias");
                 }, 2000);
             })
             .catch(error => {
@@ -50,12 +68,12 @@ const EditCategoria = () => {
             });
     };
 
-    
+
     useEffect(() => {
         if (id) {
             axios.get(`${process.env.REACT_APP_API_URL}/api/v1/categorias/categorias/${id}`)
                 .then(response => {
-                    setName(response.data.name); 
+                    setName(response.data.name);
                 })
                 .catch(error => {
                     setError('No se pudo cargar la categoría.');
@@ -72,7 +90,7 @@ const EditCategoria = () => {
                     <span className="text">CENTURY</span>
                 </a>
                 <ul className="side-menu top">
-                    <li>
+                    <li >
                         <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
@@ -84,17 +102,34 @@ const EditCategoria = () => {
                             <span className="text">Categorias</span>
                         </Link>
                     </li>
-                    {/* Otras rutas */}
+                    <li>
+                        <Link to="/admin/productos">
+                            <i className='bx bxs-doughnut-chart'></i>
+                            <span className="text">Productos</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/proveedores">
+                            <i className='bx bxs-truck'></i>
+                            <span className="text">Proveedores</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/usuarios">
+                            <i className='bx bxs-user-pin'></i>
+                            <span className="text">Usuarios</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/correos">
+                            <i className='bx bxs-envelope'></i>
+                            <span className="text">Correos</span>
+                        </Link>
+                    </li>
                 </ul>
                 <ul className="side-menu">
                     <li>
-                        <a href="#">
-                            <i className='bx bxs-cog'></i>
-                            <span className="text">Configuración</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="logout" onClick={() => {}}>
+                        <a href="#" className="logout" onClick={logout}>
                             <i className='bx bxs-log-out-circle'></i>
                             <span className="text">Cerrar Sesión</span>
                         </a>
@@ -105,7 +140,7 @@ const EditCategoria = () => {
             {/* CONTENT */}
             <section id="content">
                 <nav>
-                    
+
                 </nav>
 
                 <main>
@@ -156,6 +191,7 @@ const EditCategoria = () => {
                     </div>
                 </main>
             </section>
+            <Toaster />
         </div>
     );
 };

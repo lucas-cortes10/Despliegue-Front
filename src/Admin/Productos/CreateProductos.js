@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/productos`;
@@ -8,6 +8,7 @@ const CATEGORIAS_URL = `${process.env.REACT_APP_API_URL}/api/v1/categorias/categ
 const PROVEEDORES_URL = `${process.env.REACT_APP_API_URL}/api/v1/proveedores/proveedores`;
 
 const CrearProducto = () => {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [imagen, setImagen] = useState('');
     const [descripcion, setDescripcion] = useState('');
@@ -20,11 +21,27 @@ const CrearProducto = () => {
     const [proveedores, setProveedores] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const navigate = useNavigate();
+   
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+    });
+
+    const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        notificacionLogout();
+
+        setTimeout(() => {
+            navigate("/");
+        }, 2000);
+    };
 
     const nombreobligarotio = () => toast.error('El nombre es obligatorio');
     const nombreInvalido = () => toast.error('El nombre solo puede contener letras, números y espacios');
-    const nombreCorto= () => toast.error('El nombre tiene que tener mas de 4 caracteres');
+    const nombreCorto = () => toast.error('El nombre tiene que tener mas de 4 caracteres');
 
     const imagenObligatoria = () => toast.error('La imagen es obligatoria');
     const imagenInvalida = () => toast.error('El URL de la imagen debe ser un enlace válido ');
@@ -45,12 +62,12 @@ const CrearProducto = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
-       //Verifica si es admin o no
+        const correoLogin = localStorage.getItem('correoLogin');
+        //Verifica si es admin o no
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-          navigate('/'); 
+            navigate('/');
         }
-      }, [navigate]);
+    }, [navigate]);
 
     useEffect(() => {
         axios.get(CATEGORIAS_URL)
@@ -65,7 +82,7 @@ const CrearProducto = () => {
     useEffect(() => {
         axios.get(PROVEEDORES_URL)
             .then(response => {
-                setProveedores(response.data); 
+                setProveedores(response.data);
             })
             .catch(error => {
                 console.error('Error al cargar los proveedores:', error);
@@ -74,7 +91,7 @@ const CrearProducto = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-    
+
         // Validaciones
         if (!name || name.trim().length === 0) {
             nombreobligarotio();
@@ -86,7 +103,7 @@ const CrearProducto = () => {
             nombreInvalido();
             return;
         }
-        
+
         if (!imagen || imagen.trim().length === 0) {
             imagenObligatoria();
             return;
@@ -94,7 +111,7 @@ const CrearProducto = () => {
             imagenInvalida();
             return;
         }
-        
+
         if (!descripcion || descripcion.trim().length === 0) {
             descripcionObligatoria();
             return;
@@ -102,7 +119,7 @@ const CrearProducto = () => {
             descripcionInvalida();
             return;
         }
-        
+
         if (!stock) {
             stockObligatorio();
             return;
@@ -113,49 +130,49 @@ const CrearProducto = () => {
             stockDecimal();
             return;
         }
-        
+
         if (!precio) {
             precioObligatorio();
             return;
         } else if (isNaN(precio) || parseFloat(precio) <= 0) {
             precioNegativo();
             return;
-        } else if (parseFloat(precio) < 10000) {  
+        } else if (parseFloat(precio) < 10000) {
             precioMayor();
             return;
         }
-        
+
         try {
             // Verificamos producto , categoria y proveedor
             const response = await axios.get(`${API_URL}`);
             const productos = response.data;
-            
-            
+
+
             // Buscar un producto existente que coincida
             const productoExistente = productos.find(p => {
                 console.log("Comparando producto:", p);
                 console.log("Nombre coincide:", p.name === name);
                 console.log("Categoría actual:", p.categoria);
                 console.log("Proveedor actual:", p.proveedores);
-                
-                return p.name === name && 
-                    p.categoria && p.categoria.categoriaId === parseInt(categoriaId) && 
+
+                return p.name === name &&
+                    p.categoria && p.categoria.categoriaId === parseInt(categoriaId) &&
                     p.proveedores && p.proveedores.proveedorId === parseInt(proveedorId);
             });
-            
+
             console.log("Producto existente encontrado:", productoExistente);
-            
+
             if (productoExistente) {
-                
+
                 console.log("Estructura del producto encontrado:", JSON.stringify(productoExistente, null, 2));
-                
+
                 // Sumar el stock actual con el nuevo
                 const nuevoStock = parseInt(productoExistente.stock) + parseInt(stock);
-                
-               
+
+
                 if (!productoExistente.id && !productoExistente.productoId) {
                     console.log("El producto existe pero no tiene ID, creando uno nuevo");
-                    
+
                     // Crear nuevo producto con stock acumulado
                     const producto = {
                         name,
@@ -166,19 +183,19 @@ const CrearProducto = () => {
                         categoria: { categoriaId: parseInt(categoriaId) },
                         proveedores: { proveedorId: parseInt(proveedorId) }
                     };
-                    
+
                     await axios.post(API_URL, producto);
                     setSuccess(`Producto "${name}" creado con stock actualizado a ${nuevoStock} unidades.`);
                     productoCreado(name);
                 } else {
-                    
+
                     const id = productoExistente.productoId || productoExistente.id;
                     console.log("ID a utilizar:", id);
-                    
+
                     if (!id) {
                         throw new Error('No se pudo determinar el ID del producto');
                     }
-                    
+
                     // Actualizamos el producto existente
                     await axios.put(`${API_URL}/${id}`, {
                         productoId: id,
@@ -191,7 +208,7 @@ const CrearProducto = () => {
                         categoria: { categoriaId: parseInt(categoriaId) },
                         proveedores: { proveedorId: parseInt(proveedorId) }
                     });
-                    
+
                     setSuccess(`El producto "${name}" ya existe. No fue creado, pero se actualizó su stock a ${nuevoStock} unidades.`);
                     productoActualizado(name, nuevoStock);
                 }
@@ -206,15 +223,15 @@ const CrearProducto = () => {
                     categoria: { categoriaId: parseInt(categoriaId) },
                     proveedores: { proveedorId: parseInt(proveedorId) }
                 };
-                
+
                 console.log("Creando nuevo producto:", producto);
                 await axios.post(API_URL, producto);
                 setSuccess(`Producto "${name}" creado exitosamente`);
                 productoCreado(name);
             }
-            
+
             setError('');
-            
+
             // Limpiar formulario
             setName('');
             setImagen('');
@@ -239,64 +256,58 @@ const CrearProducto = () => {
     return (
         <div className="ds-container">
             {/* SIDEBAR */}
-        <section id="sidebar">
-        <a href="#" className="brand">
-          <i className='bx bxs-face-mask'></i>
-          <span className="text">CENTURY</span>
-        </a>
-        <ul className="side-menu top">
-          <li >
-            <a href="/admin">
-              <i className='bx bxs-dashboard'></i>
-              <span className="text">Inicio</span>
-            </a>
-          </li>
-          <li>
-            <Link to="/admin/categorias">
-              <i className='bx bxs-shopping-bag-alt'></i>
-              <span className="text">Categorias</span>
-            </Link>
-          </li>
-          <li className="active">
-            <Link to="/admin/productos">
-              <i className='bx bxs-doughnut-chart'></i>
-              <span className="text">Productos</span>
-            </Link>
-          </li>
-          <li >
-            <Link to="/admin/proveedores">
-              <i className='bx bxs-truck'></i>
-              <span className="text">Proveedores</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/usuarios">
-              <i className='bx bxs-user-pin' ></i>
-              <span className="text">Usuarios</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/correos">
-               <i className='bx bxs-envelope' ></i>
-              <span className="text">Correos</span>
-            </Link>
-          </li>
-        </ul>
-        <ul className="side-menu">
-          <li>
-            <a href="#">
-              <i className='bx bxs-cog'></i>
-              <span className="text">Configuracion</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" className="logout" onClick={handleLogout}>
-              <i className='bx bxs-log-out-circle'></i>
-              <span className="text">Cerrar Sesión</span>
-            </a>
-          </li>
-        </ul>
-      </section>
+            <section id="sidebar">
+                <a href="#" className="brand">
+                    <i className='bx bxs-face-mask'></i>
+                    <span className="text">CENTURY</span>
+                </a>
+                <ul className="side-menu top">
+                    <li >
+                        <a href="#">
+                            <i className='bx bxs-dashboard'></i>
+                            <span className="text">Inicio</span>
+                        </a>
+                    </li>
+                    <li>
+                        <Link to="/admin/categorias">
+                            <i className='bx bxs-shopping-bag-alt'></i>
+                            <span className="text">Categorias</span>
+                        </Link>
+                    </li>
+                    <li className="active">
+                        <Link to="/admin/productos">
+                            <i className='bx bxs-doughnut-chart'></i>
+                            <span className="text">Productos</span>
+                        </Link>
+                    </li>
+                    <li >
+                        <Link to="/admin/proveedores">
+                            <i className='bx bxs-truck'></i>
+                            <span className="text">Proveedores</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/usuarios">
+                            <i className='bx bxs-user-pin'></i>
+                            <span className="text">Usuarios</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/correos">
+                            <i className='bx bxs-envelope'></i>
+                            <span className="text">Correos</span>
+                        </Link>
+                    </li>
+                </ul>
+                <ul className="side-menu">
+                    <li>
+                        <a href="#" className="logout" onClick={logout}>
+                            <i className='bx bxs-log-out-circle'></i>
+                            <span className="text">Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
 
             <section id="content">
                 {/* NAVBAR */}

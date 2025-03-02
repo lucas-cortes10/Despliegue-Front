@@ -2,11 +2,29 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 
 const EditarProductos = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [originalStock, setOriginalStock] = useState(0);
+
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+    });
+
+    const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        notificacionLogout();
+
+        setTimeout(() => {
+            navigate("/");
+        }, 2000);
+    };
 
     const [formData, setFormData] = useState({
         name: '',
@@ -96,40 +114,40 @@ const EditarProductos = () => {
                 confirmButtonText: 'Sí, actualizar',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
-                if (result.isConfirmed){
+                if (result.isConfirmed) {
                     axios.put(`${process.env.REACT_APP_API_URL}/api/v1/productos/${id}`, productoActualizado)
-                    .then(() => {
-                        Swal.fire('Actualizado', 'El producto ha sido actualizado.', 'success');
-                        navigate("/admin/productos");
-                    })
-                    .catch(() => {
-                        Swal.fire('Error', 'Problema al actualizar.', 'Error');
-                    });
+                        .then(() => {
+                            Swal.fire('Actualizado', 'El producto ha sido actualizado.', 'success');
+                            navigate("/admin/productos");
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'Problema al actualizar.', 'Error');
+                        });
                 }
-            }); 
-            
-            
-            
+            });
+
+
+
             if (Number(formData.stock) !== originalStock) {
                 try {
                     // User ID
                     const userId = localStorage.getItem('userId') || "0";
                     const correoLogin = localStorage.getItem('correoLogin') || "sistema";
-                    
-                   
+
+
                     const stockChange = {
                         productoId: Number(id),
                         productoNombre: formData.name,
                         stockAnterior: originalStock,
                         stockNuevo: Number(formData.stock),
-                        administradorId: userId, 
+                        administradorId: userId,
                         administradorCorreo: correoLogin,
                         fechaCambio: new Date().toISOString().slice(0, 19)
                     };
-                    
+
                     console.log("Enviando historial de stock:", stockChange);
-                    
-                    
+
+
                     const stockResponse = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/stockhistorial`, stockChange);
                     console.log("Historial de stock registrado con éxito:", stockResponse.data);
                 } catch (stockError) {
@@ -144,7 +162,7 @@ const EditarProductos = () => {
                     }
                 }
             }
-            
+
             setSuccess('Producto actualizado con éxito!');
             setError('');
             setTimeout(() => {
@@ -162,10 +180,10 @@ const EditarProductos = () => {
                 if (id) {
                     const productoRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/productos/${id}`);
                     const producto = productoRes.data;
-                    
-                    
+
+
                     setOriginalStock(producto.stock);
-                    
+
                     setFormData({
                         name: producto.name,
                         descripcion: producto.descripcion,
@@ -183,7 +201,7 @@ const EditarProductos = () => {
 
                 const categoriasRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/categorias/categorias`);
                 const proveedoresRes = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/proveedores/proveedores`);
-                
+
                 setCategorias(categoriasRes.data);
                 setProveedores(proveedoresRes.data);
             } catch (error) {
@@ -203,17 +221,49 @@ const EditarProductos = () => {
                     <span className="text">CENTURY</span>
                 </a>
                 <ul className="side-menu top">
-                    <li>
+                    <li >
                         <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
                         </a>
                     </li>
                     <li>
-                        <Link to="/admin/productos">
+                        <Link to="/admin/categorias">
                             <i className='bx bxs-shopping-bag-alt'></i>
+                            <span className="text">Categorias</span>
+                        </Link>
+                    </li>
+                    <li className="active">
+                        <Link to="/admin/productos">
+                            <i className='bx bxs-doughnut-chart'></i>
                             <span className="text">Productos</span>
                         </Link>
+                    </li>
+                    <li >
+                        <Link to="/admin/proveedores">
+                            <i className='bx bxs-truck'></i>
+                            <span className="text">Proveedores</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/usuarios">
+                            <i className='bx bxs-user-pin'></i>
+                            <span className="text">Usuarios</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/correos">
+                            <i className='bx bxs-envelope'></i>
+                            <span className="text">Correos</span>
+                        </Link>
+                    </li>
+                </ul>
+                <ul className="side-menu">
+                    <li>
+                        <a href="#" className="logout" onClick={logout}>
+                            <i className='bx bxs-log-out-circle'></i>
+                            <span className="text">Cerrar Sesión</span>
+                        </a>
                     </li>
                 </ul>
             </section>
@@ -229,7 +279,7 @@ const EditarProductos = () => {
                     <div className="table-data">
                         <div className="container-productos">
                             <h1>Editar Producto</h1>
-                           
+
 
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
@@ -255,12 +305,12 @@ const EditarProductos = () => {
                                 <div className="mb-3">
                                     <label htmlFor="estado" className="form-label">Estado</label>
                                     <div className="form-check">
-                                        <input 
-                                            type="checkbox" 
-                                            className="form-check-input" 
-                                            id="estado" 
-                                            name="estado" 
-                                            checked={formData.estado} 
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id="estado"
+                                            name="estado"
+                                            checked={formData.estado}
                                             onChange={handleChange}
                                         />
                                         <label className="form-check-label" htmlFor="estado">
@@ -293,6 +343,7 @@ const EditarProductos = () => {
                     </div>
                 </main>
             </section>
+            <Toaster />
         </div>
     );
 };

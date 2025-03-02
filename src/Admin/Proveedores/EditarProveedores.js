@@ -5,18 +5,35 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const EditProveedores = () => {
 
-    const numeroigual = ()=>toast.error("Número debe tener 10 Digitos");
-    const solonumero = ()=>toast.error("Solo admite Numeros");
+    const numeroigual = () => toast.error("Número debe tener 10 Digitos");
+    const solonumero = () => toast.error("Solo admite Numeros");
     const navigate = useNavigate();
+
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+    });
+
+    const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        notificacionLogout();
+
+        setTimeout(() => {
+            navigate("/");
+        }, 2000);
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
-       //Verifica si es admin o no
+        const correoLogin = localStorage.getItem('correoLogin');
+        //Verifica si es admin o no
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-          navigate('/'); 
+            navigate('/');
         }
-      }, [navigate]);
+    }, [navigate]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -26,10 +43,10 @@ const EditProveedores = () => {
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-   
-    const { id } = useParams();  
 
-    
+    const { id } = useParams();
+
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -38,31 +55,31 @@ const EditProveedores = () => {
         });
     };
 
-    
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        
+
         if (!formData.name || !formData.email || !formData.telefono || !formData.servicios) {
             setError('Todos los campos son obligatorios.');
             return;
         }
 
-        if(formData.telefono.length < 10 || formData.telefono.length >= 11){
+        if (formData.telefono.length < 10 || formData.telefono.length >= 11) {
             numeroigual();
             return;
-        }else if((/[^0-9]/g.test(formData.telefono))){
+        } else if ((/[^0-9]/g.test(formData.telefono))) {
             solonumero();
             return;
         }
 
-        
+
         axios.put(`${process.env.REACT_APP_API_URL}/api/v1/proveedores/proveedores/${id}`, formData)
             .then(response => {
                 setSuccess('Proveedor actualizado con éxito!');
                 setError('');
                 setTimeout(() => {
-                    navigate("/admin/proveedores"); 
+                    navigate("/admin/proveedores");
                 }, 2000);
             })
             .catch(error => {
@@ -71,10 +88,10 @@ const EditProveedores = () => {
             });
     };
 
-    
+
     useEffect(() => {
         if (id) {
-            axios.get(`http://localhost:8080/api/v1/proveedores/proveedores/${id}`)
+            axios.get(`${process.env.REACT_APP_API_URL}/api/v1/proveedores/proveedores/${id}`)
                 .then(response => {
                     setFormData(response.data);
                 })
@@ -93,28 +110,46 @@ const EditProveedores = () => {
                     <span className="text">CENTURY</span>
                 </a>
                 <ul className="side-menu top">
-                    <li>
+                    <li >
                         <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
                         </a>
                     </li>
+                    <li>
+                        <Link to="/admin/categorias">
+                            <i className='bx bxs-shopping-bag-alt'></i>
+                            <span className="text">Categorias</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/productos">
+                            <i className='bx bxs-doughnut-chart'></i>
+                            <span className="text">Productos</span>
+                        </Link>
+                    </li>
                     <li className="active">
                         <Link to="/admin/proveedores">
-                            <i className='bx bxs-shopping-bag-alt'></i>
+                            <i className='bx bxs-truck'></i>
                             <span className="text">Proveedores</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/usuarios">
+                            <i className='bx bxs-user-pin'></i>
+                            <span className="text">Usuarios</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/admin/correos">
+                            <i className='bx bxs-envelope'></i>
+                            <span className="text">Correos</span>
                         </Link>
                     </li>
                 </ul>
                 <ul className="side-menu">
                     <li>
-                        <a href="#">
-                            <i className='bx bxs-cog'></i>
-                            <span className="text">Configuración</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="logout" onClick={() => {}}>
+                        <a href="#" className="logout" onClick={logout}>
                             <i className='bx bxs-log-out-circle'></i>
                             <span className="text">Cerrar Sesión</span>
                         </a>

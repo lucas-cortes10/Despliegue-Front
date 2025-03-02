@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import DataTable from 'react-data-table-component';
 
 const Productos = () => {
@@ -11,36 +12,59 @@ const Productos = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    const notificacionLogout = () => toast('Cerrando Sesion!', {
+        icon: '🚪',
+      });
+    
+      const logout = () => {
+        // Eliminar Datos
+        localStorage.removeItem("nombreUsuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+    
+        notificacionLogout();
+    
+        setTimeout(() => {
+          navigate("/"); 
+        }, 2000); 
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const correoLogin = localStorage.getItem('correoLogin'); 
+        const correoLogin = localStorage.getItem('correoLogin');
         if (!token || !correoLogin || !correoLogin.includes("adminCentury")) {
-            navigate('/'); 
+            navigate('/');
         }
     }, [navigate]);
 
     const descargarPdf = () => {
         axios.get(`${process.env.REACT_APP_API_URL}/api/v1/productos/reporte`, {
-            responseType: 'blob'
+            responseType: 'blob',
+            timeout: 60000
         })
-        .then((response) => {
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'Productos.pdf');
-            document.body.appendChild(link);
-            link.click();
-        })
-        .catch((error) => {
-            console.error('Error al descargar el PDF:', error);
-        });
+            .then((response) => {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'Productos.pdf');
+                document.body.appendChild(link);
+                link.click();
+            })
+            .catch((error) => {
+                if (error.code === 'ECONNABORTED') {
+                    console.error('Tiempo de espera agotado al descargar el PDF');
+                } else {
+                    console.error('Error al descargar el PDF:', error);
+                }
+            });
     };
+
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_API_URL}/api/v1/productos`)
             .then(response => {
                 setProductos(response.data);
-                setBusqueda(response.data); 
+                setBusqueda(response.data);
             })
             .catch(() => setError("Error al cargar los productos o no hay productos registrados."));
 
@@ -75,7 +99,7 @@ const Productos = () => {
                 );
                 window.location.reload(); // Reload
             }
-        )
+            )
             .catch(() => {
                 setError(`Error al ${estadoActual ? 'deshabilitar' : 'habilitar'} el producto.`);
             });
@@ -103,15 +127,15 @@ const Productos = () => {
         if (query === '') {
             setBusqueda(productos);
         } else {
-            const filteredData = productos.filter(producto => 
-                producto.name.toLowerCase().includes(query) || 
+            const filteredData = productos.filter(producto =>
+                producto.name.toLowerCase().includes(query) ||
                 getCategoryName(producto.categoria?.categoriaId).toLowerCase().includes(query) ||
                 getProviderName(producto.proveedores?.proveedorId).toLowerCase().includes(query)
             );
             setBusqueda(filteredData);
         }
     };
-    
+
 
     const columns = [
         {
@@ -183,8 +207,8 @@ const Productos = () => {
                     <span className="text">CENTURY</span>
                 </a>
                 <ul className="side-menu top">
-                    <li>
-                        <a href="/admin">
+                    <li >
+                        <a href="#">
                             <i className='bx bxs-dashboard'></i>
                             <span className="text">Inicio</span>
                         </a>
@@ -201,7 +225,7 @@ const Productos = () => {
                             <span className="text">Productos</span>
                         </Link>
                     </li>
-                    <li>
+                    <li >
                         <Link to="/admin/proveedores">
                             <i className='bx bxs-truck'></i>
                             <span className="text">Proveedores</span>
@@ -222,13 +246,7 @@ const Productos = () => {
                 </ul>
                 <ul className="side-menu">
                     <li>
-                        <a href="#">
-                            <i className='bx bxs-cog'></i>
-                            <span className="text">Configuracion</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="logout" onClick={handleLogout}>
+                        <a href="#" className="logout" onClick={logout}>
                             <i className='bx bxs-log-out-circle'></i>
                             <span className="text">Cerrar Sesión</span>
                         </a>
@@ -243,7 +261,7 @@ const Productos = () => {
                     <i className='bx bx-menu'></i>
                     <form action="#">
                         <div className="form-input">
-                            <input type="text"  placeholder="Búsqueda..." />
+                            <input type="text" placeholder="Búsqueda..." />
                             <button type="submit" className="search-btn"><i className='bx bx-search'></i></button>
                         </div>
                     </form>
@@ -298,6 +316,7 @@ const Productos = () => {
                     </div>
                 </main>
             </section>
+            <Toaster />
         </div>
     );
 };
